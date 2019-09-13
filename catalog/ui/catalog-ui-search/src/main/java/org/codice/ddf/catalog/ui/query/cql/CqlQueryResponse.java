@@ -21,19 +21,11 @@ import ddf.catalog.data.Metacard;
 import ddf.catalog.data.MetacardType;
 import ddf.catalog.data.Result;
 import ddf.catalog.filter.FilterAdapter;
-import ddf.catalog.operation.FacetAttributeResult;
-import ddf.catalog.operation.FacetValueCount;
-import ddf.catalog.operation.Query;
-import ddf.catalog.operation.QueryRequest;
-import ddf.catalog.operation.QueryResponse;
+import ddf.catalog.operation.*;
 import ddf.catalog.source.UnsupportedQueryException;
 import ddf.catalog.source.solr.SolrMetacardClientImpl;
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -63,6 +55,8 @@ public class CqlQueryResponse {
 
   private final Boolean userSpellcheckIsOn;
 
+  private Set<String> errors = new HashSet<>();
+
   // Transient so as not to be serialized to/from JSON
   private final transient QueryResponse queryResponse;
 
@@ -79,6 +73,12 @@ public class CqlQueryResponse {
     this.id = id;
 
     this.queryResponse = queryResponse;
+
+    Set<ProcessingDetails> setOfProcessingDetails = queryResponse.getProcessingDetails();
+
+    for (ProcessingDetails processingDetails : setOfProcessingDetails) {
+      this.errors.addAll(processingDetails.getWarnings());
+    }
 
     status = new Status(queryResponse, source, elapsedTime);
 

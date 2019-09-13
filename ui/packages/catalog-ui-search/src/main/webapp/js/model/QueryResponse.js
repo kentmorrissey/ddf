@@ -20,6 +20,7 @@ const properties = require('../properties.js')
 const user = require('../../component/singletons/user-instance.js')
 const Common = require('../Common.js')
 require('backbone-associations')
+const announcement = require('../../component/announcement/index.jsx')
 const QueryResponseSourceStatus = require('./QueryResponseSourceStatus.js')
 const QueryResultCollection = require('./QueryResult.collection.js')
 
@@ -208,6 +209,21 @@ module.exports = Backbone.AssociatedModel.extend({
     }
   },
   parse(resp, options) {
+    if (resp.errors && resp.status && resp.status.id) {
+      _.forEach(resp.errors, error => {
+        announcement.announce({
+          title: resp.status.id,
+          message: error,
+          type: 'error',
+        })
+      })
+    } else {
+      announcement.announce({
+        title: 'foo',
+        message: 'bar',
+        type: 'error',
+      })
+    }
     metacardDefinitions.addMetacardDefinitions(resp.types)
     if (resp.results) {
       const queryId = this.getQueryId()
@@ -215,8 +231,6 @@ module.exports = Backbone.AssociatedModel.extend({
       _.forEach(resp.results, result => {
         result.propertyTypes =
           resp.types[result.metacard.properties['metacard-type']]
-        result.metacardType = result.metacard.properties['metacard-type']
-        result.metacard.id = result.metacard.properties.id
         if (resp.status.id !== 'cache') {
           result.uncached = true
         }

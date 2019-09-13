@@ -38,6 +38,7 @@ import ddf.catalog.filter.FilterAdapter;
 import ddf.catalog.filter.FilterBuilder;
 import ddf.catalog.filter.impl.SortByImpl;
 import ddf.catalog.impl.filter.GeoToolsFunctionFactory;
+import ddf.catalog.operation.ProcessingDetails;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
 import ddf.catalog.operation.impl.QueryImpl;
@@ -535,7 +536,7 @@ public class EndpointUtil {
       results = retrieveResults(cqlRequest, request, responses);
     }
 
-    QueryResponse response =
+    QueryResponseImpl response =
         new QueryResponseImpl(
             request,
             results,
@@ -552,6 +553,14 @@ public class EndpointUtil {
                 .map(QueryResponse::getProperties)
                 .findFirst()
                 .orElse(Collections.emptyMap()));
+
+    Set<ProcessingDetails> setOfProcessingDetails = response.getProcessingDetails();
+
+    for (QueryResponse queryResponse : responses) {
+      for (ProcessingDetails processingDetails : queryResponse.getProcessingDetails()) {
+        setOfProcessingDetails.add(processingDetails);
+      }
+    }
 
     stopwatch.stop();
 

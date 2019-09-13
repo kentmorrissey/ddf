@@ -20,6 +20,7 @@ import ddf.catalog.data.Result;
 import ddf.catalog.data.impl.MetacardImpl;
 import ddf.catalog.data.impl.ResultImpl;
 import ddf.catalog.federation.FederationStrategy;
+//import ddf.catalog.operation.*;
 import ddf.catalog.operation.CreateResponse;
 import ddf.catalog.operation.DeleteResponse;
 import ddf.catalog.operation.Query;
@@ -38,6 +39,7 @@ import ddf.catalog.plugin.PreFederatedQueryPlugin;
 import ddf.catalog.plugin.StopProcessingException;
 import ddf.catalog.source.Source;
 import ddf.catalog.source.UnsupportedQueryException;
+import ddf.catalog.util.impl.QueryUtil;
 import ddf.catalog.util.impl.RelevanceResultComparator;
 import ddf.catalog.util.impl.Requests;
 import java.util.ArrayList;
@@ -504,7 +506,9 @@ public class CachingFederationStrategy implements FederationStrategy, PostIngest
     @Override
     public SourceResponse call() throws Exception {
       QueryRequest queryRequest = getQueryRequest();
-      return getSourceResponse(queryRequest);
+      SourceResponse foo = getSourceResponse(queryRequest);
+      System.out.println("arbitrary");
+      return foo;
     }
 
     @SuppressWarnings("squid:S1181" /*Catching throwable intentionally*/)
@@ -555,12 +559,17 @@ public class CachingFederationStrategy implements FederationStrategy, PostIngest
               .map(ResultImpl::new)
               .collect(Collectors.toList());
 
-      return new QueryResponseImpl(
-          sourceResponse.getRequest(),
-          clonedResults,
-          true,
-          sourceResponse.getHits(),
-          sourceResponse.getProperties());
+      QueryResponse queryResponse = QueryUtil.clone(sourceResponse, true, clonedResults);
+      /*          new QueryResponseImpl(
+              sourceResponse.getRequest(),
+              clonedResults,
+              true,
+              sourceResponse.getHits(),
+              sourceResponse.getProperties());
+
+      //      queryResponse.setProcessingDetails(
+      //          (Set<ProcessingDetails>) sourceResponse.getProcessingDetails());*/
+      return queryResponse;
     }
   }
 
