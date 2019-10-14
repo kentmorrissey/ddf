@@ -16,6 +16,7 @@ package org.codice.ddf.catalog.ui.query.cql;
 import static ddf.catalog.Constants.EXPERIMENTAL_FACET_RESULTS_KEY;
 
 import ddf.action.ActionRegistry;
+import ddf.catalog.content.operation.ProcessingReport;
 import ddf.catalog.data.AttributeDescriptor;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.MetacardType;
@@ -23,6 +24,7 @@ import ddf.catalog.data.Result;
 import ddf.catalog.filter.FilterAdapter;
 import ddf.catalog.operation.FacetAttributeResult;
 import ddf.catalog.operation.FacetValueCount;
+import ddf.catalog.operation.ProcessingDetails;
 import ddf.catalog.operation.Query;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
@@ -63,6 +65,8 @@ public class CqlQueryResponse {
 
   private final Boolean userSpellcheckIsOn;
 
+  private ProcessingReport processingReport;
+
   // Transient so as not to be serialized to/from JSON
   private final transient QueryResponse queryResponse;
 
@@ -75,10 +79,17 @@ public class CqlQueryResponse {
       boolean normalize,
       FilterAdapter filterAdapter,
       ActionRegistry actionRegistry,
-      TransformerDescriptors descriptors) {
+      TransformerDescriptors descriptors,
+      ReportProcessors reportProcessors) {
     this.id = id;
 
     this.queryResponse = queryResponse;
+
+    Set<ProcessingDetails> setOfProcessingDetails = queryResponse.getProcessingDetails();
+
+    for (ProcessingDetails processingDetails : setOfProcessingDetails) {
+      this.processingReport = reportProcessors.handle(processingDetails);
+    }
 
     status = new Status(queryResponse, source, elapsedTime);
 

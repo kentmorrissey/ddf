@@ -42,6 +42,20 @@ Implementation details
         <argument ref="queryResponseTransformers"/>
     </bean>
 
+    <reference-list id="processorList" interface="ddf.catalog.content.operation.ReportProcessor"
+                    availability="optional">
+        <reference-listener bind-method="bindPlugin" unbind-method="unbindPlugin">
+            <bean class="org.codice.ddf.platform.util.SortedServiceList"/>
+        </reference-listener>
+    </reference-list>
+
+    <bean id="reportProcessors" class="org.codice.ddf.catalog.ui.query.cql.ReportProcessors">
+        <cm:managed-properties
+                persistent-id="org.codice.ddf.catalog.ui.query.cql.ReportProcessors"
+                update-strategy="container-managed"/>
+        <property name="processors" ref="processorList"/>
+    </bean>
+
     <bean id="endpointUtil" class="org.codice.ddf.catalog.ui.util.EndpointUtil">
         <cm:managed-properties
                 persistent-id="org.codice.ddf.catalog.ui.whitelist"
@@ -54,6 +68,7 @@ Implementation details
         <argument ref="injectableAttributes"/>
         <argument ref="attributeRegistry"/>
         <argument ref="configurationApplication"/>
+        <argument ref="reportProcessors"/>
         <property name="whiteListedMetacardTypes">
             <array/>
         </property>
