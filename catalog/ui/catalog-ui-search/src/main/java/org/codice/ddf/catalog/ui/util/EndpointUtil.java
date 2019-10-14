@@ -38,6 +38,7 @@ import ddf.catalog.filter.FilterAdapter;
 import ddf.catalog.filter.FilterBuilder;
 import ddf.catalog.filter.impl.SortByImpl;
 import ddf.catalog.impl.filter.GeoToolsFunctionFactory;
+import ddf.catalog.operation.ProcessingDetails;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
 import ddf.catalog.operation.impl.QueryImpl;
@@ -83,6 +84,7 @@ import org.codice.ddf.catalog.ui.config.ConfigurationApplication;
 import org.codice.ddf.catalog.ui.metacard.EntityTooLargeException;
 import org.codice.ddf.catalog.ui.query.cql.CqlQueryResponse;
 import org.codice.ddf.catalog.ui.query.cql.CqlRequest;
+import org.codice.ddf.catalog.ui.query.cql.ReportProcessors;
 import org.codice.ddf.catalog.ui.transformer.TransformerDescriptors;
 import org.codice.gsonsupport.GsonTypeAdapters.LongDoubleTypeAdapter;
 import org.geotools.factory.CommonFactoryFinder;
@@ -117,6 +119,8 @@ public class EndpointUtil {
   private final AttributeRegistry attributeRegistry;
 
   private final ConfigurationApplication config;
+
+  private final ReportProcessors reportProcessors;
 
   private static final String ISO_8601_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
@@ -154,7 +158,8 @@ public class EndpointUtil {
       ActionRegistry actionRegistry,
       List<InjectableAttribute> injectableAttributes,
       AttributeRegistry attributeRegistry,
-      ConfigurationApplication config) {
+      ConfigurationApplication config,
+      ReportProcessors reportProcessors) {
     this.metacardTypes = metacardTypes;
     this.catalogFramework = catalogFramework;
     this.filterBuilder = filterBuilder;
@@ -163,6 +168,7 @@ public class EndpointUtil {
     this.injectableAttributes = injectableAttributes;
     this.attributeRegistry = attributeRegistry;
     this.config = config;
+    this.reportProcessors = reportProcessors;
     registerGeoToolsFunctionFactory();
   }
 
@@ -535,7 +541,7 @@ public class EndpointUtil {
       results = retrieveResults(cqlRequest, request, responses);
     }
 
-    QueryResponse response =
+    QueryResponseImpl response =
         new QueryResponseImpl(
             request,
             results,
@@ -553,6 +559,14 @@ public class EndpointUtil {
                 .findFirst()
                 .orElse(Collections.emptyMap()));
 
+    Set<ProcessingDetails> setOfProcessingDetails = response.getProcessingDetails();
+
+    for (QueryResponse queryResponse : responses) {
+      for (ProcessingDetails processingDetails : queryResponse.getProcessingDetails()) {
+        setOfProcessingDetails.add(processingDetails);
+      }
+    }
+
     stopwatch.stop();
 
     return new CqlQueryResponse(
@@ -564,7 +578,8 @@ public class EndpointUtil {
         cqlRequest.isNormalize(),
         filterAdapter,
         actionRegistry,
-        descriptors);
+        descriptors,
+        reportProcessors);
   }
 
   private List<Result> retrieveHitCount(QueryRequest request, List<QueryResponse> responses)

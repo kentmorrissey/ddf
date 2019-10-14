@@ -163,7 +163,8 @@ public class EndpointUtilTest {
             actionRegistryMock,
             injectableAttributeList,
             attributeRegistryMock,
-            configurationApplicationMock);
+            configurationApplicationMock,
+            null);
 
     endpointUtil.setDescriptors(
         new TransformerDescriptors(Collections.emptyList(), Collections.emptyList()));

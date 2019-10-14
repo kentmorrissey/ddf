@@ -52,8 +52,8 @@ public class SourceResponseImpl extends ResponseImpl<QueryRequest> implements So
    * @param results the hits associated with the query
    * @param totalHits the total results associated with the query.
    */
-  public SourceResponseImpl(QueryRequest request, List<Result> results, Long totalHits) {
-    this(request, null, results, totalHits != null ? totalHits.longValue() : 0);
+  public SourceResponseImpl(QueryRequest request, List<Result> results, Long totalHits) { //why do we use Long here and not long????
+    this(request, null, results, totalHits != null ? totalHits : 0);
   }
 
   /**

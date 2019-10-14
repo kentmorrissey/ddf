@@ -75,10 +75,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.codice.ddf.spatial</groupId>
-            <artifactId>spatial-csw-transformer</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.codice.thirdparty</groupId>
             <artifactId>ogc-filter-v_1_1_0-schema</artifactId>
         </dependency>
@@ -91,6 +87,10 @@
             <groupId>org.jvnet.ogc</groupId>
             <artifactId>ows-v_1_0_0-schema</artifactId>
             <version>${ows-v_1_0_0-schema.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codice.ddf.spatial</groupId>
+            <artifactId>spatial-csw-transformer</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jvnet.jaxb2_commons</groupId>
@@ -188,7 +188,6 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -198,7 +197,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <build>
         <resources>
             <resource>
@@ -237,7 +235,6 @@
                                             <value>COVEREDRATIO</value>
                                             <minimum>0.53</minimum>
                                         </limit>
-
                                     </limits>
                                 </rule>
                             </rules>

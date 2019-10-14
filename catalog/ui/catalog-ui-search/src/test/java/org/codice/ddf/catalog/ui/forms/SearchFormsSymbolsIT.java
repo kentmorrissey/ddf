@@ -160,7 +160,8 @@ public class SearchFormsSymbolsIT {
           null, // No interaction
           null, // No interaction
           null, // No interaction
-          MOCK_CONFIG);
+          MOCK_CONFIG,
+          null);
 
   private static final SearchFormsApplication APPLICATION =
       new SearchFormsApplication(
