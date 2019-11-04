@@ -23,12 +23,14 @@ import ddf.catalog.data.Result;
 import ddf.catalog.filter.FilterAdapter;
 import ddf.catalog.operation.FacetAttributeResult;
 import ddf.catalog.operation.FacetValueCount;
+import ddf.catalog.operation.ProcessingDetails;
 import ddf.catalog.operation.Query;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
 import ddf.catalog.source.UnsupportedQueryException;
 import ddf.catalog.source.solr.SolrMetacardClientImpl;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +63,8 @@ public class CqlQueryResponse {
 
   private final List<String> showingResultsForFields, didYouMeanFields;
 
+  private final List<String> warnings;
+
   private final Boolean userSpellcheckIsOn;
 
   // Transient so as not to be serialized to/from JSON
@@ -75,10 +79,18 @@ public class CqlQueryResponse {
       boolean normalize,
       FilterAdapter filterAdapter,
       ActionRegistry actionRegistry,
-      TransformerDescriptors descriptors) {
+      TransformerDescriptors descriptors,
+      MessageValidatorManager messageValidatorManager) {
     this.id = id;
 
     this.queryResponse = queryResponse;
+
+    warnings = new ArrayList<>();
+    if (messageValidatorManager != null && queryResponse != null) {
+      for (ProcessingDetails currentDetails : queryResponse.getProcessingDetails()) {
+        warnings.addAll(messageValidatorManager.getValidWarningsFrom(currentDetails));
+      }
+    }
 
     status = new Status(queryResponse, source, elapsedTime);
 

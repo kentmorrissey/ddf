@@ -38,6 +38,7 @@ import ddf.catalog.filter.FilterAdapter;
 import ddf.catalog.filter.FilterBuilder;
 import ddf.catalog.filter.impl.SortByImpl;
 import ddf.catalog.impl.filter.GeoToolsFunctionFactory;
+import ddf.catalog.operation.ProcessingDetails;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
 import ddf.catalog.operation.impl.QueryImpl;
@@ -84,6 +85,7 @@ import org.codice.ddf.catalog.ui.config.ConfigurationApplication;
 import org.codice.ddf.catalog.ui.metacard.EntityTooLargeException;
 import org.codice.ddf.catalog.ui.query.cql.CqlQueryResponse;
 import org.codice.ddf.catalog.ui.query.cql.CqlRequest;
+import org.codice.ddf.catalog.ui.query.cql.MessageValidatorManager;
 import org.codice.ddf.catalog.ui.transformer.TransformerDescriptors;
 import org.codice.gsonsupport.GsonTypeAdapters.LongDoubleTypeAdapter;
 import org.geotools.factory.CommonFactoryFinder;
@@ -118,6 +120,8 @@ public class EndpointUtil implements EndpointUtility {
   private final AttributeRegistry attributeRegistry;
 
   private final ConfigurationApplication config;
+
+  private final MessageValidatorManager messageValidatorManager;
 
   private static final String ISO_8601_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
@@ -155,7 +159,8 @@ public class EndpointUtil implements EndpointUtility {
       ActionRegistry actionRegistry,
       List<InjectableAttribute> injectableAttributes,
       AttributeRegistry attributeRegistry,
-      ConfigurationApplication config) {
+      ConfigurationApplication config,
+      MessageValidatorManager messageValidatorManager) {
     this.metacardTypes = metacardTypes;
     this.catalogFramework = catalogFramework;
     this.filterBuilder = filterBuilder;
@@ -164,6 +169,7 @@ public class EndpointUtil implements EndpointUtility {
     this.injectableAttributes = injectableAttributes;
     this.attributeRegistry = attributeRegistry;
     this.config = config;
+    this.messageValidatorManager = messageValidatorManager;
     registerGeoToolsFunctionFactory();
   }
 
@@ -538,7 +544,7 @@ public class EndpointUtil implements EndpointUtility {
       results = retrieveResults(cqlRequest, request, responses);
     }
 
-    QueryResponse response =
+    QueryResponse aggregatedResponse =
         new QueryResponseImpl(
             request,
             results,
@@ -556,18 +562,25 @@ public class EndpointUtil implements EndpointUtility {
                 .findFirst()
                 .orElse(Collections.emptyMap()));
 
+    Set<ProcessingDetails> detailsOfAggregatedResponse = aggregatedResponse.getProcessingDetails();
+
+    for (QueryResponse response : responses) {
+      detailsOfAggregatedResponse.addAll(response.getProcessingDetails());
+    }
+
     stopwatch.stop();
 
     return new CqlQueryResponse(
         cqlRequest.getId(),
         request,
-        response,
+        aggregatedResponse,
         cqlRequest.getSourceResponseString(),
         stopwatch.elapsed(TimeUnit.MILLISECONDS),
         cqlRequest.isNormalize(),
         filterAdapter,
         actionRegistry,
-        descriptors);
+        descriptors,
+        messageValidatorManager);
   }
 
   private List<Result> retrieveHitCount(QueryRequest request, List<QueryResponse> responses)

@@ -53,7 +53,7 @@ public class SourceResponseImpl extends ResponseImpl<QueryRequest> implements So
    * @param totalHits the total results associated with the query.
    */
   public SourceResponseImpl(QueryRequest request, List<Result> results, Long totalHits) {
-    this(request, null, results, totalHits != null ? totalHits.longValue() : 0);
+    this(request, null, results, totalHits != null ? totalHits : 0);
   }
 
   /**
@@ -133,6 +133,9 @@ public class SourceResponseImpl extends ResponseImpl<QueryRequest> implements So
    */
   @Override
   public Set<SourceProcessingDetails> getProcessingDetails() {
+    if (sourceProcessingDetails == null) {
+      sourceProcessingDetails = new HashSet<>();
+    }
     return sourceProcessingDetails;
   }
 

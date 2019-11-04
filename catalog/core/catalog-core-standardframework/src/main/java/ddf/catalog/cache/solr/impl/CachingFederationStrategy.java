@@ -22,12 +22,15 @@ import ddf.catalog.data.impl.ResultImpl;
 import ddf.catalog.federation.FederationStrategy;
 import ddf.catalog.operation.CreateResponse;
 import ddf.catalog.operation.DeleteResponse;
+import ddf.catalog.operation.ProcessingDetails;
 import ddf.catalog.operation.Query;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
+import ddf.catalog.operation.SourceProcessingDetails;
 import ddf.catalog.operation.SourceResponse;
 import ddf.catalog.operation.Update;
 import ddf.catalog.operation.UpdateResponse;
+import ddf.catalog.operation.impl.ProcessingDetailsImpl;
 import ddf.catalog.operation.impl.QueryImpl;
 import ddf.catalog.operation.impl.QueryRequestImpl;
 import ddf.catalog.operation.impl.QueryResponseImpl;
@@ -556,12 +559,22 @@ public class CachingFederationStrategy implements FederationStrategy, PostIngest
               .map(ResultImpl::new)
               .collect(Collectors.toList());
 
-      return new QueryResponseImpl(
-          sourceResponse.getRequest(),
-          clonedResults,
-          true,
-          sourceResponse.getHits(),
-          sourceResponse.getProperties());
+      QueryResponseImpl clonedResponse =
+          new QueryResponseImpl(
+              sourceResponse.getRequest(),
+              clonedResults,
+              true,
+              sourceResponse.getHits(),
+              sourceResponse.getProperties());
+
+      Set<ProcessingDetails> detailsOfClonedResponse = clonedResponse.getProcessingDetails();
+
+      for (SourceProcessingDetails detailsOfSourceResponse :
+          sourceResponse.getProcessingDetails()) {
+        detailsOfClonedResponse.add(new ProcessingDetailsImpl(detailsOfSourceResponse, ""));
+      }
+
+      return clonedResponse;
     }
   }
 

@@ -175,6 +175,9 @@ public class QueryResponseImpl extends ResponseImpl<QueryRequest> implements Que
 
   @Override
   public Set<ProcessingDetails> getProcessingDetails() {
+    if (details == null) {
+      details = new HashSet<>();
+    }
     return details;
   }
 
